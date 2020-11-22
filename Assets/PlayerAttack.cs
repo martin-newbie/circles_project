@@ -12,6 +12,9 @@ public class PlayerAttack : MonoBehaviour
     private float range;
 
     [SerializeField]
+    private float zoomRange;
+
+    [SerializeField]
     private bool autoChk;
 
     private float currentRange;
@@ -57,14 +60,16 @@ public class PlayerAttack : MonoBehaviour
             currentRange -= 2 * Time.deltaTime;
         }
 
-        if (Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse1) && !(PlayerMove.moveCheck))
         {
-            currentRange = 0;
+            currentRange = zoomRange;
         }
-
+        else
+        {
+            currentRange = range;
+        }
         Vector3 mousePos2 = Input.mousePosition;
 
-        Debug.Log(mousePos2);
 
         if (mousePos2.x < 400) // 왼쪽
         {

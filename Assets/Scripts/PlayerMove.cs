@@ -5,10 +5,14 @@ using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
 {
+    public static PlayerMove instance = null;
     private float walk_speed;
+    public static bool onTriggerEnter = false;
 
     public GameObject[] weapons;
     public bool[] hasWeapons;
+    Vector2 MousePosition;
+    Camera Camera;
 
     bool iDown;
     bool sDown1;
@@ -18,6 +22,7 @@ public class PlayerMove : MonoBehaviour
 
 
     public static bool runCheck = false;
+    public static bool moveCheck = false;
 
 
     private Animator anim;
@@ -34,8 +39,11 @@ public class PlayerMove : MonoBehaviour
 
     void Start()
     {
+        instance = this;
         anim = GetComponent<Animator>();
         theStatusController = FindObjectOfType<StatusController>();
+        Camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        MousePosition = Camera.ScreenToWorldPoint(MousePosition);
     }
 
     void Update()
@@ -52,30 +60,41 @@ public class PlayerMove : MonoBehaviour
         {
             runCheck = true;
             walk_speed = 7;
-            theStatusController.DecreaseStamina(5);  
+            theStatusController.DecreaseStamina(5);
         }
         else
         {
             runCheck = false;
             walk_speed = 2;
         }
-        if (Input.GetKey(KeyCode.W))
+        if(Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.S)|| Input.GetKey(KeyCode.D)|| Input.GetKey(KeyCode.A))
         {
-            transform.Translate(Vector2.up * walk_speed * Time.deltaTime);
+            if (Input.GetKey(KeyCode.W))
+            {
+                transform.Translate(Vector2.up * walk_speed * Time.deltaTime);
+                moveCheck = true;
+            }
+            if (Input.GetKey(KeyCode.S))
+            {
+                transform.Translate(Vector2.down * walk_speed * Time.deltaTime);
+                moveCheck = true;
+            }
+            if (Input.GetKey(KeyCode.D))
+            {
+                transform.Translate(Vector2.right * walk_speed * Time.deltaTime);
+                moveCheck = true;
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+                transform.Translate(Vector2.left * walk_speed * Time.deltaTime);
+                moveCheck = true;
+            }
         }
-        if (Input.GetKey(KeyCode.S))
+        else
         {
-            transform.Translate(Vector2.down * walk_speed * Time.deltaTime);
+            moveCheck = false;
         }
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Translate(Vector2.right * walk_speed * Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Translate(Vector2.left * walk_speed * Time.deltaTime);
-        }
-
+        
         if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
         {
             anim.SetFloat("MoveX", Input.GetAxisRaw("Horizontal"));
@@ -133,25 +152,24 @@ public class PlayerMove : MonoBehaviour
                 Item item = nearObject.GetComponent<Item>();
                 int weaponIndex = item.value;
                 hasWeapons[weaponIndex] = true;
-
                 Destroy(nearObject);
             }
         }
     }
 
+
     private void OnTriggerStay2D(Collider2D other)
     {
-        if(other.tag == "Weapon")
-        {
-            nearObject = other.gameObject;
-        }
-        Debug.Log(nearObject.name);
+        onTriggerEnter = true;
+        Item.GetCollider(other.gameObject, ref nearObject);
     }
     private void OnTriggerExit2D(Collider2D other)
     {
-        if(other.tag == "Weapon")
-        {
-            nearObject = null;
-        }
+        onTriggerEnter = false;
+    }
+
+    public void GetCollider(ref GameObject near)
+    {
+        nearObject = near;
     }
 }
